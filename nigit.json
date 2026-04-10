@@ -1,0 +1,13 @@
+{
+  "projects": [
+    {
+      "url": "git@github.com:AutoxingTech/axbot-ts-sdk.git"
+    },
+    {
+      "url": "git@github.com:AutoxingTech/axbot-ts-sdk-demo.git"
+    },
+    {
+      "url": "git@github.com:AutoxingTech/axbot_rest_book.git"
+    }
+  ]
+}
