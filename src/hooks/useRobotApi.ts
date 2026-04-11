@@ -1,4 +1,3 @@
-import { notificationManager } from '@kingsimba/nc-ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { robotApi } from '@kingsimba/axbot-sdk/robotApi';
 
@@ -59,8 +58,12 @@ export function useRobotApi() {
   });
   const [configured, setConfigured] = useState(false);
   const [proxyInfo, setProxyInfo] = useState<ProxyInfo | null>(null);
-  const [loadingLabel, setLoadingLabel] = useState<string | null>(null);
-  const [lastError, setLastError] = useState<string | null>(null);
+
+  const [connectionLoading, setConnectionLoading] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+
+  const [apiLoadingLabel, setApiLoadingLabel] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(connection));
@@ -71,21 +74,15 @@ export function useRobotApi() {
       getApiBase: () => '/robot-api',
       notification: {
         showNotification(notification: any) {
-          const type = notification.type === 'danger' ? 'danger' : notification.type || null;
-          notificationManager.show({
-            message: notification.title
-              ? `${notification.title}: ${notification.message}`
-              : notification.message,
-            type,
-          });
+          console.log('[SDK Notification]', notification);
         },
       },
     });
   }, []);
 
   const applyConnectionConfig = useCallback(async () => {
-    setLoadingLabel('Apply connection');
-    setLastError(null);
+    setConnectionLoading(true);
+    setConnectionError(null);
 
     try {
       const response = await fetch('/__robot/config', {
@@ -106,17 +103,14 @@ export function useRobotApi() {
         wsUrl: data.wsUrl,
         hasCookie: data.hasCookie,
       });
-      notificationManager.show({
-        message: 'Proxy configuration applied.',
-        type: 'success',
-      });
+      console.log('Proxy configuration applied.');
     } catch (error) {
       const message = formatError(error);
       setConfigured(false);
-      setLastError(message);
-      notificationManager.show({ message, type: 'danger' });
+      setConnectionError(message);
+      console.error(message);
     } finally {
-      setLoadingLabel(null);
+      setConnectionLoading(false);
     }
   }, [connection, initSdk]);
 
@@ -127,25 +121,22 @@ export function useRobotApi() {
   }, []);
 
   const execute = useCallback<ExecuteRobotCall>(async (label, operation) => {
-    setLoadingLabel(label);
-    setLastError(null);
+    setApiLoadingLabel(label);
+    setApiError(null);
 
     try {
       const value = await operation();
       const parsed =
         value instanceof Response ? await parseResponse(value) : value;
-      notificationManager.show({ message: `${label} succeeded.`, type: 'success' });
+      console.log(`${label} succeeded.`);
       return parsed;
     } catch (error) {
       const message = formatError(error);
-      setLastError(message);
-      notificationManager.show({
-        message: `${label} failed: ${message}`,
-        type: 'danger',
-      });
+      setApiError(`${label} failed: ${message}`);
+      console.error(`${label} failed: ${message}`);
       return undefined;
     } finally {
-      setLoadingLabel(null);
+      setApiLoadingLabel(null);
     }
   }, []);
 
@@ -155,8 +146,10 @@ export function useRobotApi() {
       setConnection,
       configured,
       proxyInfo,
-      loadingLabel,
-      lastError,
+      connectionLoading,
+      connectionError,
+      apiLoadingLabel,
+      apiError,
       applyConnectionConfig,
       execute,
     }),
@@ -164,8 +157,10 @@ export function useRobotApi() {
       connection,
       configured,
       proxyInfo,
-      loadingLabel,
-      lastError,
+      connectionLoading,
+      connectionError,
+      apiLoadingLabel,
+      apiError,
       applyConnectionConfig,
       execute,
     ],

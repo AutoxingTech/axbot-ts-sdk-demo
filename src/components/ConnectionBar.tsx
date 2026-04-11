@@ -1,4 +1,3 @@
-import { Alert, Button, Input } from '@kingsimba/nc-ui';
 import type { ConnectionConfig, ProxyInfo } from '../hooks/useRobotApi';
 
 type ConnectionBarProps = {
@@ -19,50 +18,62 @@ export function ConnectionBar({
     onApply,
 }: ConnectionBarProps) {
     return (
-        <div className="block connection-panel">
-            <div className="connection-grid">
-                <Input
-                    label="REST base URL"
-                    value={connection.restBaseUrl}
-                    onChange={(value) => onConnectionChange({ ...connection, restBaseUrl: value })}
-                    placeholder="https://xxx"
-                    clearable
-                />
-                <Input
-                    label="WebSocket URL"
-                    value={connection.wsUrl}
-                    onChange={(value) => onConnectionChange({ ...connection, wsUrl: value })}
-                    placeholder="Optional. Defaults to ws(s)://host/ws/v2/topics"
-                    clearable
-                />
-            </div>
-
-            <Input
-                label="Cookie header"
-                multiline
-                rows={3}
-                value={connection.cookie}
-                onChange={(value) => onConnectionChange({ ...connection, cookie: value })}
-                placeholder="Paste the full Cookie header value here, for example token=..."
-            />
-
-            <div className="connection-actions">
-                <Button variant="primary" loading={loading} onClick={() => void onApply()}>
-                    Apply Connection
-                </Button>
-                <div className="connection-status">
-                    <span className={configured ? 'tag green' : 'tag yellow'}>{configured ? 'Proxy ready' : 'Not configured'}</span>
-                    {proxyInfo ? <span className="weak">WS: {proxyInfo.wsUrl || 'not set'}</span> : null}
+        <div className="card">
+            <h2 className="card-title">Connection Settings & Proxy</h2>
+            <div className="grid">
+                <div className="control-group">
+                    <label className="control-label">REST Base URL</label>
+                    <input 
+                        className="input" 
+                        value={connection.restBaseUrl} 
+                        onChange={e => onConnectionChange({ ...connection, restBaseUrl: e.target.value })} 
+                        placeholder="https://192.168.1.100" 
+                    />
+                </div>
+                <div className="control-group">
+                    <label className="control-label">WebSocket URL</label>
+                    <input 
+                        className="input" 
+                        value={connection.wsUrl} 
+                        onChange={e => onConnectionChange({ ...connection, wsUrl: e.target.value })} 
+                        placeholder="Optional. Defaults to ws(s)://host/ws/v2/topics" 
+                    />
                 </div>
             </div>
 
-            {!configured ? (
-                <Alert
-                    code={10}
-                    type="warning"
-                    text="The SDK calls the local /robot-api proxy. The Vite dev server forwards requests to the robot URL you apply here and injects the cookie for auth."
+            <div className="control-group mt-4">
+                <label className="control-label">Cookie / Token</label>
+                <textarea 
+                    className="input" 
+                    rows={3} 
+                    value={connection.cookie} 
+                    onChange={e => onConnectionChange({ ...connection, cookie: e.target.value })} 
+                    style={{ resize: 'vertical' }}
+                    placeholder="Paste the full Cookie header value here..."
                 />
-            ) : null}
+            </div>
+
+            <div className="flex-row mt-4" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="flex-row">
+                    <button className="btn btn-primary" disabled={loading} onClick={() => void onApply()}>
+                        {loading ? 'Applying...' : 'Apply Connection'}
+                    </button>
+                    
+                    <span className={`status-badge ${configured ? 'status-connected' : 'status-disconnected'}`}>
+                        {configured ? 'Proxy ready' : 'Not configured'}
+                    </span>
+
+                    {proxyInfo && proxyInfo.wsUrl && (
+                        <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>WS: {proxyInfo.wsUrl}</span>
+                    )}
+                </div>
+            </div>
+
+            {!configured && (
+                <div style={{ marginTop: '1rem', backgroundColor: '#f0f9ff', color: '#0369a1', padding: '0.75rem 1rem', borderRadius: 'var(--radius)', border: '1px solid #bae6fd', fontSize: '0.875rem' }}>
+                    <strong>Setup:</strong> The SDK calls a local proxy (`/robot-api`). The Vite dev server will forward requests to the URL above, injecting your Cookie for authentication.
+                </div>
+            )}
         </div>
     );
 }

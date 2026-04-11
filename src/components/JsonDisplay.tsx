@@ -17,11 +17,13 @@ function formatValue(value: unknown): string {
 
 export function JsonDisplay({ title, value }: JsonDisplayProps) {
     return (
-        <div className="output-panel">
-            <div className="output-header">
-                <h2 className="h3">{title}</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', height: '100%', minHeight: 0 }}>
+            <div className="json-header">
+                {title}
             </div>
-            <pre className="code-block output-code">{formatValue(value)}</pre>
+            <pre className="json-display" style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+                <code>{formatValue(value)}</code>
+            </pre>
         </div>
     );
 }

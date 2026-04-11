@@ -1,22 +1,19 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useWebSocket } from '../hooks/useWebSocket';
-import { wsClient, WsMessageStore } from '@kingsimba/axbot-sdk/ws';
+import * as wsExports from '@kingsimba/axbot-sdk/ws';
+const { wsClient, WsMessageStore } = wsExports;
 
-const TOPICS = [
-  { name: '/slam/state', color: '' },
-  { name: '/imu_state', color: '' },
-  { name: '/push_handle_state', color: '' },
-  { name: '/v2x_health_state', color: '' },
-  { name: '/towing_state', color: '' },
-  { name: '/devpvt', color: '' },
-  { name: '/tracked_pose', color: '' },
-  { name: '/planning_state', color: '' },
-  { name: '/horizontal_laser_2d/scan', color: '#ffd966' },
-  { name: '/depth_camera/forward/points2', color: '#ffe599' },
-  { name: '/depth_camera/downward/points2', color: '#93c47d' },
-  { name: '/detailed_battery_state', color: '' },
-  { name: '/jack_state', color: '' }
-];
+const PREDEFINED_COLORS: Record<string, string> = {
+  '/horizontal_laser_2d/scan': '#ffd966',
+  '/depth_camera/forward/points2': '#ffe599',
+  '/depth_camera/downward/points2': '#93c47d',
+};
+
+const TOPICS: { name: string; color: string }[] = Object.values(wsExports)
+  .filter((v: any) => v && typeof v.topicName === 'string')
+  .map((v: any) => ({ name: v.topicName, color: PREDEFINED_COLORS[v.topicName] || '' }))
+  .sort((a, b) => a.name.localeCompare(b.name));
+
 
 type WsPanelProps = {
   configured: boolean;
@@ -51,11 +48,11 @@ function TopicCard({ topic, onClose }: { topic: string; onClose: () => void }) {
     return Object.keys(data).map(key => {
       let valDisplay = data[key];
       if (typeof valDisplay === 'object' && valDisplay !== null) {
-         if (valDisplay instanceof Uint8Array || ArrayBuffer.isView(valDisplay)) {
-           valDisplay = '<binary data>';
-         } else {
-           valDisplay = JSON.stringify(valDisplay);
-         }
+        if (valDisplay instanceof Uint8Array || ArrayBuffer.isView(valDisplay)) {
+          valDisplay = '<binary data>';
+        } else {
+          valDisplay = JSON.stringify(valDisplay);
+        }
       }
       return (
         <tr key={key}>
@@ -67,9 +64,9 @@ function TopicCard({ topic, onClose }: { topic: string; onClose: () => void }) {
   };
 
   return (
-    <div style={{ 
-      border: '1px solid #ddd', 
-      borderRadius: '4px', 
+    <div style={{
+      border: '1px solid #ddd',
+      borderRadius: '4px',
       minWidth: '280px',
       maxWidth: '400px',
       backgroundColor: '#fff',
@@ -89,8 +86,8 @@ function TopicCard({ topic, onClose }: { topic: string; onClose: () => void }) {
         fontFamily: 'monospace'
       }}>
         <span>{topic}</span>
-        <button 
-          onClick={onClose} 
+        <button
+          onClick={onClose}
           style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', color: '#888' }}
         >
           &times;
@@ -110,6 +107,7 @@ function TopicCard({ topic, onClose }: { topic: string; onClose: () => void }) {
 export function WsPanel({ configured, onResult }: WsPanelProps) {
   const { connected, setShouldConnect, shouldConnect } = useWebSocket({ enabled: configured });
   const [activeTopics, setActiveTopics] = useState<string[]>([]);
+  const [topicFilter, setTopicFilter] = useState('');
 
   const addTopic = (topic: string) => {
     if (!activeTopics.includes(topic)) {
@@ -123,19 +121,36 @@ export function WsPanel({ configured, onResult }: WsPanelProps) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', fontFamily: 'sans-serif' }}>
-      <div style={{ padding: '10px', borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
-          <input 
-            type="checkbox" 
-            checked={shouldConnect} 
-            onChange={(e) => setShouldConnect(e.target.checked)} 
-            disabled={!configured}
-          />
-          <b>Connect</b>
-        </label>
-        <span style={{ fontSize: '12px', color: connected ? 'green' : 'red' }}>
-          {connected ? '● Connected' : '○ Disconnected'}
-        </span>
+      <div style={{ padding: '16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: 'var(--bg-surface)' }}>
+        <button
+          className={`btn ${shouldConnect ? 'btn-danger' : 'btn-primary'}`}
+          onClick={() => setShouldConnect(!shouldConnect)}
+          disabled={!configured}
+          style={{ padding: '0.5rem 1.5rem', fontWeight: 600 }}
+        >
+          {shouldConnect ? 'Disconnect' : 'Connect'}
+        </button>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '6px 12px',
+          borderRadius: '9999px',
+          backgroundColor: connected ? '#dcfce7' : '#fee2e2',
+          color: connected ? '#166534' : '#991b1b',
+          fontSize: '0.875rem',
+          fontWeight: 600,
+          border: `1px solid ${connected ? '#bbf7d0' : '#fecaca'}`
+        }}>
+          <div style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            backgroundColor: connected ? '#22c55e' : '#ef4444',
+            boxShadow: connected ? '0 0 0 2px rgba(34, 197, 94, 0.2)' : '0 0 0 2px rgba(239, 68, 68, 0.2)'
+          }} />
+          {connected ? 'Connected' : 'Disconnected'}
+        </div>
       </div>
 
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
@@ -153,12 +168,19 @@ export function WsPanel({ configured, onResult }: WsPanelProps) {
           )}
         </div>
 
-        <div style={{ width: '260px', borderLeft: '1px solid #eee', padding: '16px', overflowY: 'auto' }}>
+        <div style={{ width: '280px', borderLeft: '1px solid #eee', padding: '16px', overflowY: 'auto' }}>
           <h3 style={{ marginTop: 0, color: '#666', fontSize: '14px', marginBottom: '12px' }}>Add Topic</h3>
+          <input
+            type="text"
+            placeholder="Filter topics..."
+            value={topicFilter}
+            onChange={(e) => setTopicFilter(e.target.value)}
+            style={{ width: '100%', padding: '6px 8px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '4px' }}
+          />
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            {TOPICS.map(item => (
+            {TOPICS.filter(t => t.name.toLowerCase().includes(topicFilter.toLowerCase())).map(item => (
               <li key={item.name} style={{ marginBottom: '8px' }}>
-                <button 
+                <button
                   onClick={() => addTopic(item.name)}
                   disabled={activeTopics.includes(item.name) || !connected}
                   style={{
@@ -176,17 +198,17 @@ export function WsPanel({ configured, onResult }: WsPanelProps) {
                     borderRadius: '4px'
                   }}
                   onMouseOver={(e) => {
-                     if(!activeTopics.includes(item.name) && connected) e.currentTarget.style.backgroundColor = '#f0f0f0';
+                    if (!activeTopics.includes(item.name) && connected) e.currentTarget.style.backgroundColor = '#f0f0f0';
                   }}
                   onMouseOut={(e) => {
-                     e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.backgroundColor = 'transparent';
                   }}
                 >
                   {item.color && (
-                    <span style={{ 
-                      width: '10px', 
-                      height: '10px', 
-                      backgroundColor: item.color, 
+                    <span style={{
+                      width: '10px',
+                      height: '10px',
+                      backgroundColor: item.color,
                       display: 'inline-block',
                       marginRight: '6px',
                       borderRadius: item.name.includes('horizontal_laser_2d') ? '50%' : '2px'
