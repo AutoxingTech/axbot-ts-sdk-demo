@@ -70,7 +70,7 @@ export function useRobotApi() {
     robotApi.init({
       getApiBase: () => '/robot-api',
       notification: {
-        showNotification(notification) {
+        showNotification(notification: any) {
           const type = notification.type === 'danger' ? 'danger' : notification.type || null;
           notificationManager.show({
             message: notification.title

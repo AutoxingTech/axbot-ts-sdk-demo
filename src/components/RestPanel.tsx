@@ -129,7 +129,7 @@ export function RestPanel({ configured, loadingLabel, onResult, execute }: RestP
                             onClick={() =>
                                 void runAction('Create Move', () =>
                                     robotApi.createMove({
-                                        type: moveType,
+                                        type: moveType as any,
                                         target_x: targetX,
                                         target_y: targetY,
                                         target_ori: targetOri,
@@ -167,7 +167,7 @@ export function RestPanel({ configured, loadingLabel, onResult, execute }: RestP
                             ]}
                             clearable={false}
                         />
-                        <Button onClick={() => void runAction('Start Mapping', () => robotApi.startMapping(continueMapping === 'true'))} disabled={!configured}>
+                        <Button onClick={() => void runAction('Start Mapping', () => robotApi.startMapping({ continue_mapping: continueMapping === 'true' }))} disabled={!configured}>
                             Start Mapping
                         </Button>
                         <Button onClick={() => void runAction('Stop Mapping', () => robotApi.stopMapping())} disabled={!configured}>
