@@ -109,8 +109,19 @@ function TopicCard({ topic, onClose }: { topic: string; onClose: () => void }) {
 
 export function WsPanel({ configured, onResult }: WsPanelProps) {
   const { connected, setShouldConnect, shouldConnect } = useWebSocket({ enabled: configured });
-  const [activeTopics, setActiveTopics] = useState<string[]>([]);
+  const [activeTopics, setActiveTopics] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('WS_ACTIVE_TOPICS');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [topicFilter, setTopicFilter] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem('WS_ACTIVE_TOPICS', JSON.stringify(activeTopics));
+  }, [activeTopics]);
 
   const addTopic = (topic: string) => {
     if (!activeTopics.includes(topic)) {
