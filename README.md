@@ -2,6 +2,9 @@
 
 An interactive browser-based demo for the [axbot-ts-sdk](https://github.com/AutoxingTech/axbot-ts-sdk) — a TypeScript SDK for controlling Autoxing AMRs via REST and WebSocket APIs.
 
+<img src="./demo1.png" width="480">
+<img src="./demo2.png" width="480">
+
 ## Features
 
 - **Connection tab** — configure the robot's base URL, WebSocket URL, and authentication cookie; the app proxies requests through a local Vite dev server to avoid CORS issues.
