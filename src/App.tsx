@@ -113,13 +113,13 @@ export function App() {
                                     }}>
                                         {lastApiCall && (
                                             <div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '24px' }}>
                                                     <div>
                                                         <strong style={{ color: 'var(--primary)' }}>{lastApiCall.method}</strong> {lastApiCall.url}
                                                     </div>
                                                     {lastApiCall.status !== undefined && (
                                                         <div style={{
-                                                            padding: '2px 6px',
+                                                            padding: '0px 6px',
                                                             borderRadius: '4px',
                                                             backgroundColor: lastApiCall.status >= 200 && lastApiCall.status < 300 ? '#dcfce7' : '#fee2e2',
                                                             color: lastApiCall.status >= 200 && lastApiCall.status < 300 ? '#166534' : '#991b1b',
@@ -153,9 +153,9 @@ export function App() {
                                         )}
                                     </div>
                                 )}
-                                {!result && <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem', flexShrink: 0 }}>The newest REST response appears here.</p>}
+                                {!result && !apiError && <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem', flexShrink: 0 }}>The newest REST response appears here.</p>}
                                 <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                                    <JsonDisplay title={result?.title ?? ''} value={result?.value ?? 'No output yet'} />
+                                    <JsonDisplay title={apiError ? 'Request Failed' : (result?.title ?? '')} value={apiError ? apiError : (result?.value ?? 'No output yet')} />
                                 </div>
                             </div>
                         </div>

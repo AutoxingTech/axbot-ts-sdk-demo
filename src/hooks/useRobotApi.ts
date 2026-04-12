@@ -150,9 +150,9 @@ export function useRobotApi() {
       return parsed;
     } catch (error) {
       const message = formatError(error);
-      setApiError(`${label} failed: ${message}`);
+      setApiError(message);
       console.error(`${label} failed: ${message}`);
-      return { error: `${label} failed: ${message}` };
+      return undefined;
     } finally {
       setApiLoadingLabel(null);
     }

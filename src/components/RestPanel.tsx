@@ -3,7 +3,7 @@ import { robotApi, MapItem, MappingTaskItem, MoveAction } from '@kingsimba/axbot
 import type { ExecuteRobotCall } from '../hooks/useRobotApi';
 
 
-type ResultSetter = (result: { title: string; value: unknown }) => void;
+type ResultSetter = (result: { title: string; value: unknown } | null) => void;
 
 type RestPanelProps = {
     configured: boolean;
@@ -68,6 +68,7 @@ export function RestPanel({ configured, loadingLabel, onResult, execute }: RestP
     }, [activeSection, configured]);
 
     async function runAction(label: string, action: () => Promise<unknown>) {
+        onResult(null);
         const value = await execute(label, action);
         if (value !== undefined) {
             onResult({ title: label, value });
