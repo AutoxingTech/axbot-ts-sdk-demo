@@ -9,9 +9,12 @@ const PREDEFINED_COLORS: Record<string, string> = {
   '/depth_camera/downward/points2': '#93c47d',
 };
 
-const TOPICS: { name: string; color: string }[] = Object.values(wsExports)
-  .filter((v: any) => v && typeof v.topicName === 'string')
-  .map((v: any) => ({ name: v.topicName, color: PREDEFINED_COLORS[v.topicName] || '' }))
+const rawTopics = Object.values(wsExports)
+  .filter((v: any) => v && (typeof v.topicName === 'string' || typeof v.topic === 'string'))
+  .map((v: any) => v.topicName || v.topic);
+
+const TOPICS: { name: string; color: string }[] = Array.from(new Set(rawTopics))
+  .map(name => ({ name, color: PREDEFINED_COLORS[name] || '' }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
 
