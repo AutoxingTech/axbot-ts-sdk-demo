@@ -53,6 +53,7 @@ export function RestPanel({ configured, loadingLabel, onResult, execute }: RestP
     const [mapName, setMapName] = useState('demo-map');
     const [mapId, setMapId] = useState<number | ''>('');
     const [availableMaps, setAvailableMaps] = useState<MapItem[]>([]);
+    const [selectedPowerAction, setSelectedPowerAction] = useState('restart_service');
 
     useEffect(() => {
         if (activeSection === 'maps' && configured) {
@@ -97,6 +98,29 @@ export function RestPanel({ configured, loadingLabel, onResult, execute }: RestP
                         <button className="btn" onClick={() => void runAction('Get Wi-Fi Info', () => robotApi.getWifiInfo())} disabled={!configured}>Get Wi-Fi Info</button>
                         <button className="btn" onClick={() => void runAction('Get Effective Settings', () => robotApi.getEffectiveSettings())} disabled={!configured}>Get Effective Settings</button>
                         <button className="btn" onClick={() => void runAction('Get Settings Schema', () => robotApi.getSettingsSchema())} disabled={!configured}>Get Settings Schema</button>
+
+                        <hr className="separator" style={{ gridColumn: '1 / -1' }} />
+                        <h4 style={{ marginTop: 0, gridColumn: '1 / -1' }}>Power Control</h4>
+                        <div className="flex-row" style={{ gridColumn: '1 / -1' }}>
+                            <div className="control-group">
+                                <select className="input select" value={selectedPowerAction} onChange={e => setSelectedPowerAction(e.target.value)}>
+                                    <option value="restart_service">Restart Service</option>
+                                    <option value="reboot">Reboot</option>
+                                    <option value="shutdown">Shutdown</option>
+                                    <option value="reboot_main_board">Reboot Main Board</option>
+                                    <option value="restart_py_axbot">Restart PyAxbot</option>
+                                </select>
+                            </div>
+                            <button className="btn btn-danger" onClick={() => void runAction(`Power Execute: ${selectedPowerAction}`, async () => {
+                                switch (selectedPowerAction) {
+                                    case 'restart_service': return robotApi.restartAxbot();
+                                    case 'reboot': return robotApi.shutdownDevice('main_power_supply', true);
+                                    case 'shutdown': return robotApi.shutdownDevice('main_power_supply', false);
+                                    case 'reboot_main_board': return robotApi.shutdownDevice('main_computing_unit', true);
+                                    case 'restart_py_axbot': return robotApi.restartPyAxbot();
+                                }
+                            })} disabled={!configured}>Execute</button>
+                        </div>
                     </div>
                 )}
 
