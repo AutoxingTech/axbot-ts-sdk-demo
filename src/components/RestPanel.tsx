@@ -258,6 +258,22 @@ export function RestPanel({ configured, loadingLabel, onResult, execute }: RestP
                                 </select>
                             </div>
                             <button className="btn" style={{ marginTop: '1.25rem' }} onClick={() => typeof mapId === 'number' && void runAction('Get Map', () => robotApi.getMap(mapId))} disabled={!configured || mapId === ''}>Get Map</button>
+                            <button className="btn btn-primary" style={{ marginTop: '1.25rem' }} onClick={() => typeof mapId === 'number' && void runAction('Use Map', () => robotApi.setMap(mapId))} disabled={!configured || mapId === ''}>Use Map</button>
+                            <button className="btn" style={{ marginTop: '1.25rem' }} onClick={() => void runAction('Set Pose (Origin)', () => robotApi.setPose(0, 0, 0))} disabled={!configured}>Set Pose (Origin)</button>
+                        </div>
+                        <hr className="separator" />
+
+                        <h4 style={{ marginTop: 0 }}>Delete Map</h4>
+                        <div className="flex-row">
+                            <div className="control-group">
+                                <label className="control-label">Map ID</label>
+                                <select className="input select" value={mapId} onChange={e => setMapId(e.target.value === '' ? '' : Number(e.target.value))}>
+                                    <option value="" disabled>Select a map</option>
+                                    {availableMaps.map((m: MapItem) => (
+                                        <option key={m.id} value={m.id}>{m.map_name} (ID: {m.id})</option>
+                                    ))}
+                                </select>
+                            </div>
                             <button className="btn btn-danger" style={{ marginTop: '1.25rem' }} onClick={() => typeof mapId === 'number' && void runAction('Delete Map', () => robotApi.deleteMap(mapId))} disabled={!configured || mapId === ''}>Delete Map</button>
                         </div>
                     </div>
