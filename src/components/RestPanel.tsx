@@ -230,8 +230,8 @@ export function RestPanel({ configured, loadingLabel, onResult, execute }: RestP
                                 </select>
                             </div>
                             <button className="btn btn-primary" style={{ marginTop: '1.25rem' }} onClick={() => void runAction('Start Mapping', () => robotApi.startMapping({ continue_mapping: continueMapping === 'true' }))} disabled={!configured}>Start Mapping</button>
-                            <button className="btn btn-danger" style={{ marginTop: '1.25rem' }} onClick={() => void runAction('Stop Mapping', () => robotApi.stopMapping())} disabled={!configured}>Stop Mapping</button>
-                            <button className="btn btn-danger" style={{ marginTop: '1.25rem' }} onClick={() => void runAction('Abort Mapping', () => robotApi.abortMapping())} disabled={!configured}>Abort Mapping</button>
+                            <button className="btn btn-success" style={{ marginTop: '1.25rem' }} onClick={() => void runAction('Stop Mapping', () => robotApi.stopMapping())} disabled={!configured}>Stop Mapping</button>
+                            <button className="btn btn-warning" style={{ marginTop: '1.25rem' }} onClick={() => void runAction('Abort Mapping', () => robotApi.abortMapping())} disabled={!configured}>Abort Mapping</button>
                         </div>
 
                         <hr className="separator" />
