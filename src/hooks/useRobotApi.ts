@@ -58,6 +58,7 @@ export function useRobotApi() {
   });
   const [configured, setConfigured] = useState(false);
   const [proxyInfo, setProxyInfo] = useState<ProxyInfo | null>(null);
+  const [deviceInfo, setDeviceInfo] = useState<any | null>(null);
 
   const [connectionLoading, setConnectionLoading] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
@@ -74,6 +75,7 @@ export function useRobotApi() {
     console.log('[useRobotApi] initSdk called');
     robotApi.init({
       getApiBase: () => '/robot-api',
+      throwOnError: true,
       notification: {
         showNotification(notification: any) {
           console.log('[SDK Notification]', notification);
@@ -103,6 +105,15 @@ export function useRobotApi() {
 
       const data = (await response.json()) as ProxyInfo & { ok: boolean };
       initSdk();
+
+      // Verify connection by fetching device info
+      try {
+        const info = await robotApi.getDeviceInfo();
+        setDeviceInfo(info);
+      } catch (err) {
+        throw new Error('Failed to verify connection: ' + formatError(err));
+      }
+
       setConfigured(true);
       setProxyInfo({
         restBaseUrl: data.restBaseUrl,
@@ -113,6 +124,7 @@ export function useRobotApi() {
     } catch (error) {
       const message = formatError(error);
       setConfigured(false);
+      setDeviceInfo(null);
       setConnectionError(message);
       console.error(message);
     } finally {
@@ -152,6 +164,7 @@ export function useRobotApi() {
       setConnection,
       configured,
       proxyInfo,
+      deviceInfo,
       connectionLoading,
       connectionError,
       apiLoadingLabel,
@@ -164,6 +177,7 @@ export function useRobotApi() {
       connection,
       configured,
       proxyInfo,
+      deviceInfo,
       connectionLoading,
       connectionError,
       apiLoadingLabel,

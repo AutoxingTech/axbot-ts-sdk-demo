@@ -1,0 +1,2 @@
+overrides:
+  '@kingsimba/axbot-sdk': link:../../../.local/share/pnpm/global/5/node_modules/@kingsimba/axbot-sdk
