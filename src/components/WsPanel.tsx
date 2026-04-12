@@ -119,6 +119,33 @@ export function WsPanel({ configured, onResult }: WsPanelProps) {
     setActiveTopics(activeTopics.filter(t => t !== topic));
   };
 
+  const filteredTopics = TOPICS.filter(t => t.name.toLowerCase().includes(topicFilter.toLowerCase()));
+
+  const groupedTopics = useMemo(() => {
+    const groups: Record<string, typeof TOPICS> = {
+      'Ungrouped': [],
+      'Laser 2D': [],
+      'Laser 3D': [],
+      'Depth Camera': [],
+      'RGB': []
+    };
+    filteredTopics.forEach(t => {
+      const name = t.name.toLowerCase();
+      if (name.includes('laser_2d')) {
+        groups['Laser 2D'].push(t);
+      } else if (name.includes('laser_3d')) {
+        groups['Laser 3D'].push(t);
+      } else if (name.includes('depth')) {
+        groups['Depth Camera'].push(t);
+      } else if (name.includes('rgb')) {
+        groups['RGB'].push(t);
+      } else {
+        groups['Ungrouped'].push(t);
+      }
+    });
+    return groups;
+  }, [filteredTopics]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', fontFamily: 'sans-serif' }}>
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
@@ -173,51 +200,60 @@ export function WsPanel({ configured, onResult }: WsPanelProps) {
             <h3 style={{ marginTop: 0, color: '#666', fontSize: '14px', marginBottom: '12px' }}>Add Topic</h3>
             <input
               type="text"
+              className="filter-input"
               placeholder="Filter topics..."
               value={topicFilter}
               onChange={(e) => setTopicFilter(e.target.value)}
-              style={{ width: '100%', padding: '6px 8px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '4px' }}
             />
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {TOPICS.filter(t => t.name.toLowerCase().includes(topicFilter.toLowerCase())).map(item => (
-                <li key={item.name} style={{ marginBottom: '2px' }}>
-                  <button
-                    onClick={() => addTopic(item.name)}
-                    disabled={activeTopics.includes(item.name) || !connected}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: (activeTopics.includes(item.name) || !connected) ? 'not-allowed' : 'pointer',
-                      color: (activeTopics.includes(item.name) || !connected) ? '#bbb' : '#333',
-                      textAlign: 'left',
-                      fontFamily: 'monospace',
-                      fontSize: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '4px',
-                      width: '100%',
-                      borderRadius: '4px'
-                    }}
-                    onMouseOver={(e) => {
-                      if (!activeTopics.includes(item.name) && connected) e.currentTarget.style.backgroundColor = '#f0f0f0';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
-                  >
-                    {item.color && (
-                      <span style={{
-                        width: '10px',
-                        height: '10px',
-                        backgroundColor: item.color,
-                        display: 'inline-block',
-                        marginRight: '6px',
-                        borderRadius: item.name.includes('horizontal_laser_2d') ? '50%' : '2px'
-                      }}></span>
-                    )}
-                    {!item.color && <span style={{ marginRight: '4px' }}>+</span>}
-                    {item.name}
-                  </button>
+              {Object.entries(groupedTopics).map(([group, topics]) => topics.length > 0 && (
+                <li key={group} style={{ marginBottom: '8px' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#555', padding: '4px 0', borderBottom: '1px solid #ddd', marginBottom: '4px' }}>
+                    {group}
+                  </div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    {topics.map(item => (
+                      <li key={item.name} style={{ marginBottom: '2px' }}>
+                        <button
+                          onClick={() => addTopic(item.name)}
+                          disabled={activeTopics.includes(item.name) || !connected}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: (activeTopics.includes(item.name) || !connected) ? 'not-allowed' : 'pointer',
+                            color: (activeTopics.includes(item.name) || !connected) ? '#bbb' : '#333',
+                            textAlign: 'left',
+                            fontFamily: 'monospace',
+                            fontSize: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '4px',
+                            width: '100%',
+                            borderRadius: '4px'
+                          }}
+                          onMouseOver={(e) => {
+                            if (!activeTopics.includes(item.name) && connected) e.currentTarget.style.backgroundColor = '#f0f0f0';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }}
+                        >
+                          {item.color && (
+                            <span style={{
+                              width: '10px',
+                              height: '10px',
+                              backgroundColor: item.color,
+                              display: 'inline-block',
+                              marginRight: '6px',
+                              borderRadius: item.name.includes('horizontal_laser_2d') ? '50%' : '2px'
+                            }}></span>
+                          )}
+                          {!item.color && <span style={{ marginRight: '4px' }}>+</span>}
+                          {item.name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 </li>
               ))}
             </ul>

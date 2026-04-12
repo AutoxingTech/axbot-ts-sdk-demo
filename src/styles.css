@@ -92,10 +92,23 @@ body {
   background-color: var(--primary-hover);
 }
 
-.btn-danger {
-  background-color: var(--danger);
-  color: white;
-  border-color: var(--danger);
+.btn-danger:hover:not(:disabled) {
+  background-color: var(--danger-hover);
+}
+
+.filter-input {
+  width: 100%;
+  padding: 6px 8px;
+  margin-bottom: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.filter-input:focus {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
 }
 
 .btn-danger:hover:not(:disabled) {
