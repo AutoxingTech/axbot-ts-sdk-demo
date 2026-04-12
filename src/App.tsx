@@ -80,12 +80,6 @@ export function App() {
                     </div>
 
                     <div style={{ display: activeTab === 'rest' ? 'block' : 'none' }}>
-                        {apiError && (
-                            <div style={{ padding: '1rem', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: 'var(--radius)', border: '1px solid #f87171', marginBottom: '1rem' }}>
-                                <strong>Error:</strong> {apiError}
-                            </div>
-                        )}
-
                         <div style={{ backgroundColor: '#fffbeb', color: '#b45309', padding: '0.75rem 1rem', borderRadius: 'var(--radius)', border: '1px solid #fcd34d', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
                             <strong>Note:</strong> This demo is intended for diagnostics and API verification. Keep the robot in a safe state while testing service calls.
                         </div>
