@@ -19,16 +19,8 @@ An interactive browser-based demo for the [axbot-ts-sdk](https://github.com/Auto
 ## Getting started
 
 ```bash
-# 1. Clone the monorepo (SDK + demo live side by side)
-git clone https://github.com/AutoxingTech/axbot-ts-sdk
-cd axbot-ts-sdk
-
-# 2. Build the SDK
-pnpm install
-pnpm build
-
-# 3. Install & run the demo
-cd ../axbot-ts-sdk-demo
+git clone https://github.com/AutoxingTech/axbot-ts-sdk-demo
+cd axbot-ts-sdk-demo
 pnpm install
 pnpm dev
 ```
@@ -43,7 +35,7 @@ Open <http://localhost:5173> in your browser.
 
 ## SDK
 
-This demo depends on `@kingsimba/axbot-sdk` (the local `../axbot-ts-sdk` package).  
+This demo depends on [`@kingsimba/axbot-sdk`](https://www.npmjs.com/package/@kingsimba/axbot-sdk).  
 Source and full documentation: <https://github.com/AutoxingTech/axbot-ts-sdk>
 
 ## License
