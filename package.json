@@ -8,10 +8,12 @@
     "scripts": {
         "dev": "rm -rf node_modules/.vite && vite --force",
         "build": "tsc -b && vite build",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "sdk:unlink": "pnpm remove @kingsimba/axbot-sdk && pnpm add @kingsimba/axbot-sdk@latest",
+        "sdk:link": "pnpm remove @kingsimba/axbot-sdk && pnpm link @kingsimba/axbot-sdk"
     },
     "dependencies": {
-        "@kingsimba/axbot-sdk": "^0.1.1",
+        "@kingsimba/axbot-sdk": "^0.1.2",
         "react": "^18.3.1",
         "react-dom": "^18.3.1"
     },
