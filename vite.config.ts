@@ -204,5 +204,6 @@ export default defineConfig({
   plugins: [react(), robotProxyPlugin()],
   server: {
     host: '0.0.0.0',
+    port: 6173,
   },
 });
