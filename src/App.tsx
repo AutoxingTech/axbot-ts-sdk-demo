@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { robotApi } from '@kingsimba/axbot-sdk/robotApi';
 import { ConnectionBar } from './components/ConnectionBar';
 import { JsonDisplay } from './components/JsonDisplay';
 import { RestPanel } from './components/RestPanel';
@@ -13,6 +14,7 @@ type ResultState = {
 export function App() {
     const [activeTab, setActiveTab] = useState<'connection' | 'rest' | 'ws'>('connection');
     const [result, setResult] = useState<ResultState | null>(null);
+    useEffect(() => { console.log("ROBOT API IN APP.TSX IS", window.robotApi = robotApi); }, []);
     const {
         connection,
         setConnection,
@@ -22,6 +24,7 @@ export function App() {
         connectionError,
         apiLoadingLabel,
         apiError,
+        lastApiCall,
         applyConnectionConfig,
         execute,
     } = useRobotApi();
@@ -98,16 +101,65 @@ export function App() {
                             <div className="card" style={{ position: 'sticky', top: '0', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 220px)', overflow: 'hidden' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', minHeight: '24px' }}>
                                     <h3 className="card-title" style={{ margin: 0, border: 'none', padding: 0 }}>Latest Result</h3>
-                                    {apiLoadingLabel && (
-                                        <div className="status-badge" style={{ backgroundColor: '#eff6ff', color: '#1d4ed8' }}>
-                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#3b82f6', marginRight: '6px', animation: 'pulse 1.5s infinite' }} />
-                                            Loading: {apiLoadingLabel}...
-                                        </div>
-                                    )}
                                 </div>
-                                <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem', flexShrink: 0 }}>The newest REST response appears here.</p>
+                                {(lastApiCall || apiLoadingLabel) && (
+                                    <div style={{
+                                        backgroundColor: 'var(--bg-page)',
+                                        padding: '0.5rem 0.75rem',
+                                        borderRadius: 'var(--radius)',
+                                        marginBottom: '1rem',
+                                        fontSize: '0.8125rem',
+                                        fontFamily: 'monospace',
+                                        wordBreak: 'break-all',
+                                        color: 'var(--text-muted)',
+                                        position: 'relative',
+                                        flexShrink: 0
+                                    }}>
+                                        {lastApiCall && (
+                                            <div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <div>
+                                                        <strong style={{ color: 'var(--primary)' }}>{lastApiCall.method}</strong> {lastApiCall.url}
+                                                    </div>
+                                                    {lastApiCall.status !== undefined && (
+                                                        <div style={{
+                                                            padding: '2px 6px',
+                                                            borderRadius: '4px',
+                                                            backgroundColor: lastApiCall.status >= 200 && lastApiCall.status < 300 ? '#dcfce7' : '#fee2e2',
+                                                            color: lastApiCall.status >= 200 && lastApiCall.status < 300 ? '#166534' : '#991b1b',
+                                                            fontWeight: 'bold',
+                                                            fontSize: '0.75rem'
+                                                        }}>
+                                                            {lastApiCall.status}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {lastApiCall.payload && (
+                                                    <details style={{ marginTop: '0.5rem', borderTop: '1px solid var(--border)', paddingTop: '0.5rem' }}>
+                                                        <summary style={{ cursor: 'pointer', userSelect: 'none', fontWeight: 'bold', color: 'var(--text)' }}>Request Payload</summary>
+                                                        <pre style={{ margin: '0.5rem 0 0 0', whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: '0.75rem', background: 'transparent', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                                                            {lastApiCall.payload instanceof FormData ? '[FormData]' : typeof lastApiCall.payload === 'string' ? lastApiCall.payload : JSON.stringify(lastApiCall.payload, null, 2)}
+                                                        </pre>
+                                                    </details>
+                                                )}
+                                            </div>
+                                        )}
+                                        {apiLoadingLabel && (
+                                            <div style={{
+                                                position: 'absolute',
+                                                bottom: 0,
+                                                left: 0,
+                                                height: '2px',
+                                                width: '40%',
+                                                backgroundColor: 'var(--primary)',
+                                                animation: 'slide-progress 1.2s ease-in-out infinite'
+                                            }} />
+                                        )}
+                                    </div>
+                                )}
+                                {!result && <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem', flexShrink: 0 }}>The newest REST response appears here.</p>}
                                 <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                                    <JsonDisplay title={result?.title ?? 'No output yet'} value={result?.value ?? null} />
+                                    <JsonDisplay title={result?.title ?? ''} value={result?.value ?? 'No output yet'} />
                                 </div>
                             </div>
                         </div>

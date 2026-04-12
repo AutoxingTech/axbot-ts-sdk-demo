@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { robotApi } from '@kingsimba/axbot-sdk/robotApi';
+import { useState, useEffect } from 'react';
+import { robotApi, MapItem, MappingTaskItem, MoveAction } from '@kingsimba/axbot-sdk/robotApi';
 import type { ExecuteRobotCall } from '../hooks/useRobotApi';
 
 
@@ -45,11 +45,26 @@ export function RestPanel({ configured, loadingLabel, onResult, execute }: RestP
     const [targetX, setTargetX] = useState(0);
     const [targetY, setTargetY] = useState(0);
     const [targetOri, setTargetOri] = useState(0);
-    const [moveId, setMoveId] = useState(1);
+    const [moveId, setMoveId] = useState<number | ''>('');
+    const [availableMoves, setAvailableMoves] = useState<MoveAction[]>([]);
     const [continueMapping, setContinueMapping] = useState('false');
-    const [mappingId, setMappingId] = useState(1);
+    const [mappingId, setMappingId] = useState<number | ''>('');
+    const [availableMappings, setAvailableMappings] = useState<MappingTaskItem[]>([]);
     const [mapName, setMapName] = useState('demo-map');
-    const [mapId, setMapId] = useState(1);
+    const [mapId, setMapId] = useState<number | ''>('');
+    const [availableMaps, setAvailableMaps] = useState<MapItem[]>([]);
+
+    useEffect(() => {
+        if (activeSection === 'maps' && configured) {
+            robotApi.getMaps().then(setAvailableMaps).catch(console.error);
+        }
+        if (activeSection === 'mapping' && configured) {
+            robotApi.getMappingTasks().then(setAvailableMappings).catch(console.error);
+        }
+        if (activeSection === 'moves' && configured) {
+            robotApi.getMoves().then(setAvailableMoves).catch(console.error);
+        }
+    }, [activeSection, configured]);
 
     async function runAction(label: string, action: () => Promise<unknown>) {
         const value = await execute(label, action);
@@ -87,6 +102,38 @@ export function RestPanel({ configured, loadingLabel, onResult, execute }: RestP
 
                 {activeSection === 'moves' && (
                     <div className="flex-col">
+                        <h4 style={{ marginTop: 0 }}>List Moves</h4>
+                        <div className="flex-row">
+                            <button className="btn" onClick={() => void runAction('Get Moves', async () => {
+                                const moves = await robotApi.getMoves();
+                                setAvailableMoves(moves);
+                                return moves;
+                            })} disabled={!configured}>List Moves</button>
+                        </div>
+
+
+
+                        <hr className="separator" />
+
+                        <h4 style={{ marginTop: 0 }}>Get Move</h4>
+                        <div className="flex-row">
+                            <div className="control-group">
+                                <label className="control-label">Move ID</label>
+                                <select className="input select" value={moveId} onChange={e => setMoveId(e.target.value === '' ? '' : Number(e.target.value))}>
+                                    <option value="" disabled>Select a move</option>
+                                    {availableMoves.map(m => (
+                                        <option key={m.id} value={m.id}>{m.type} (ID: {m.id}, state: {m.state})</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <button className="btn" style={{ marginTop: '1.25rem' }} onClick={() => typeof moveId === 'number' && void runAction('Get Move By ID', () => robotApi.getMoveById(moveId))} disabled={!configured || moveId === ''}>Get Move By ID</button>
+                        </div>
+
+
+
+                        <hr className="separator" />
+
+                        <h4 style={{ marginTop: 0 }}>Create Move</h4>
                         <div className="grid">
                             <div className="control-group">
                                 <label className="control-label">Move Type</label>
@@ -109,24 +156,46 @@ export function RestPanel({ configured, loadingLabel, onResult, execute }: RestP
                         </div>
                         <div className="flex-row">
                             <button className="btn btn-primary" onClick={() => void runAction('Create Move', () => robotApi.createMove({ type: moveType as any, target_x: targetX, target_y: targetY, target_ori: targetOri }))} disabled={!configured}>Create Move</button>
-                            <button className="btn" onClick={() => void runAction('Get Moves', () => robotApi.getMoves())} disabled={!configured}>List Moves</button>
                             <button className="btn btn-danger" onClick={() => void runAction('Cancel Current Move', () => robotApi.cancelCurrentMove())} disabled={!configured}>Cancel Current Move</button>
-                        </div>
-
-                        <hr style={{ margin: '1rem 0', borderColor: 'var(--border)' }} />
-
-                        <div className="flex-row">
-                            <div className="control-group">
-                                <label className="control-label">Move ID</label>
-                                <input type="number" className="input" value={moveId} onChange={e => setMoveId(Number(e.target.value))} min={1} />
-                            </div>
-                            <button className="btn" style={{ marginTop: '1.25rem' }} onClick={() => void runAction('Get Move By ID', () => robotApi.getMoveById(moveId))} disabled={!configured}>Get Move By ID</button>
                         </div>
                     </div>
                 )}
 
                 {activeSection === 'mapping' && (
                     <div className="flex-col">
+                        <h4 style={{ marginTop: 0 }}>List Mapping Tasks</h4>
+                        <div className="flex-row">
+                            <button className="btn" onClick={() => void runAction('List Mapping Tasks', async () => {
+                                const mappings = await robotApi.getMappingTasks();
+                                setAvailableMappings(mappings);
+                                return mappings;
+                            })} disabled={!configured}>List Mappings</button>
+                        </div>
+
+
+
+                        <hr className="separator" />
+
+                        <h4 style={{ marginTop: 0 }}>Manage Mapping Task</h4>
+                        <div className="grid">
+                            <div className="control-group">
+                                <label className="control-label">Mapping ID</label>
+                                <select className="input select" value={mappingId} onChange={e => setMappingId(e.target.value === '' ? '' : Number(e.target.value))}>
+                                    <option value="" disabled>Select a mapping task</option>
+                                    {availableMappings.map(m => (
+                                        <option key={m.id} value={m.id}>{m.start_time ? new Date(m.start_time * 1000).toLocaleString() : 'Task'} (ID: {m.id}, state: {m.state})</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="flex-row">
+                            <button className="btn" style={{ marginTop: '1.25rem' }} onClick={() => typeof mappingId === 'number' && void runAction('Get Mapping Task', () => robotApi.getMappingTask(mappingId))} disabled={!configured || mappingId === ''}>Get Mapping Task</button>
+                            <button className="btn btn-danger" style={{ marginTop: '1.25rem' }} onClick={() => typeof mappingId === 'number' && void runAction('Delete Mapping Task', () => robotApi.deleteMappingTask(mappingId))} disabled={!configured || mappingId === ''}>Delete Mapping Task</button>
+                        </div>
+
+                        <hr className="separator" />
+
+                        <h4 style={{ marginTop: 0 }}>Create Mapping Task</h4>
                         <div className="flex-row">
                             <div className="control-group">
                                 <label className="control-label">Continue Mapping</label>
@@ -140,31 +209,18 @@ export function RestPanel({ configured, loadingLabel, onResult, execute }: RestP
                             <button className="btn btn-danger" style={{ marginTop: '1.25rem' }} onClick={() => void runAction('Abort Mapping', () => robotApi.abortMapping())} disabled={!configured}>Abort Mapping</button>
                         </div>
 
-                        <hr style={{ margin: '1rem 0', borderColor: 'var(--border)' }} />
+                        <hr className="separator" />
 
+                        <h4 style={{ marginTop: 0 }}>Save Mapping as Map</h4>
                         <div className="grid">
                             <div className="control-group">
                                 <label className="control-label">Mapping ID</label>
-                                <input type="number" className="input" value={mappingId} onChange={e => setMappingId(Number(e.target.value))} min={1} />
-                            </div>
-                        </div>
-                        <div className="flex-row">
-                            <button className="btn btn-danger" style={{ marginTop: '1.25rem' }} onClick={() => void runAction('Delete Mapping Task', () => robotApi.deleteMappingTask(mappingId))} disabled={!configured}>Delete Mapping Task</button>
-                        </div>
-                    </div>
-                )}
-
-                {activeSection === 'maps' && (
-                    <div className="flex-col">
-                        <div className="flex-row">
-                            <button className="btn btn-primary" onClick={() => void runAction('List Maps', () => robotApi.getMaps())} disabled={!configured}>List Maps</button>
-                        </div>
-                        <hr style={{ margin: '1rem 0', borderColor: 'var(--border)' }} />
-                        <h4 style={{ marginTop: 0 }}>Save Map from Mapping</h4>
-                        <div className="grid">
-                            <div className="control-group">
-                                <label className="control-label">Mapping ID</label>
-                                <input type="number" className="input" value={mappingId} onChange={e => setMappingId(Number(e.target.value))} min={1} />
+                                <select className="input select" value={mappingId} onChange={e => setMappingId(e.target.value === '' ? '' : Number(e.target.value))}>
+                                    <option value="" disabled>Select a mapping task</option>
+                                    {availableMappings.filter(m => m.state === 'finished').map((m: MappingTaskItem) => (
+                                        <option key={m.id} value={m.id}>{m.start_time ? new Date(m.start_time * 1000).toLocaleString() : 'Task'} (ID: {m.id})</option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="control-group">
                                 <label className="control-label">Map Name</label>
@@ -172,17 +228,37 @@ export function RestPanel({ configured, loadingLabel, onResult, execute }: RestP
                             </div>
                         </div>
                         <div className="flex-row">
-                            <button className="btn btn-primary" onClick={() => void runAction('Save Mapping As Map', () => robotApi.saveMappingAsMap(mappingId, mapName))} disabled={!configured}>Save Mapping As Map</button>
+                            <button className="btn btn-primary" onClick={() => typeof mappingId === 'number' && void runAction('Save Mapping As Map', () => robotApi.saveMappingAsMap(mappingId, mapName))} disabled={!configured || mappingId === ''}>Save Mapping As Map</button>
+                        </div>
+                    </div>
+                )}
+
+                {activeSection === 'maps' && (
+                    <div className="flex-col">
+                        <h4 style={{ marginTop: 0 }}>List Maps</h4>
+                        <div className="flex-row">
+                            <button className="btn btn-primary" onClick={() => void runAction('List Maps', async () => {
+                                const maps = await robotApi.getMaps();
+                                setAvailableMaps(maps);
+                                return maps;
+                            })} disabled={!configured}>List Maps</button>
                         </div>
 
-                        <hr style={{ margin: '1rem 0', borderColor: 'var(--border)' }} />
+                        <hr className="separator" />
 
+                        <h4 style={{ marginTop: 0 }}>Manage Map</h4>
                         <div className="flex-row">
                             <div className="control-group">
                                 <label className="control-label">Map ID</label>
-                                <input type="number" className="input" value={mapId} onChange={e => setMapId(Number(e.target.value))} min={1} />
+                                <select className="input select" value={mapId} onChange={e => setMapId(e.target.value === '' ? '' : Number(e.target.value))}>
+                                    <option value="" disabled>Select a map</option>
+                                    {availableMaps.map((m: MapItem) => (
+                                        <option key={m.id} value={m.id}>{m.map_name} (ID: {m.id})</option>
+                                    ))}
+                                </select>
                             </div>
-                            <button className="btn btn-danger" style={{ marginTop: '1.25rem' }} onClick={() => void runAction('Delete Map', () => robotApi.deleteMap(mapId))} disabled={!configured}>Delete Map</button>
+                            <button className="btn" style={{ marginTop: '1.25rem' }} onClick={() => typeof mapId === 'number' && void runAction('Get Map', () => robotApi.getMap(mapId))} disabled={!configured || mapId === ''}>Get Map</button>
+                            <button className="btn btn-danger" style={{ marginTop: '1.25rem' }} onClick={() => typeof mapId === 'number' && void runAction('Delete Map', () => robotApi.deleteMap(mapId))} disabled={!configured || mapId === ''}>Delete Map</button>
                         </div>
                     </div>
                 )}

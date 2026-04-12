@@ -121,38 +121,6 @@ export function WsPanel({ configured, onResult }: WsPanelProps) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', fontFamily: 'sans-serif' }}>
-      <div style={{ padding: '16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: 'var(--bg-surface)' }}>
-        <button
-          className={`btn ${shouldConnect ? 'btn-danger' : 'btn-primary'}`}
-          onClick={() => setShouldConnect(!shouldConnect)}
-          disabled={!configured}
-          style={{ padding: '0.5rem 1.5rem', fontWeight: 600 }}
-        >
-          {shouldConnect ? 'Disconnect' : 'Connect'}
-        </button>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '6px 12px',
-          borderRadius: '9999px',
-          backgroundColor: connected ? '#dcfce7' : '#fee2e2',
-          color: connected ? '#166534' : '#991b1b',
-          fontSize: '0.875rem',
-          fontWeight: 600,
-          border: `1px solid ${connected ? '#bbf7d0' : '#fecaca'}`
-        }}>
-          <div style={{
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            backgroundColor: connected ? '#22c55e' : '#ef4444',
-            boxShadow: connected ? '0 0 0 2px rgba(34, 197, 94, 0.2)' : '0 0 0 2px rgba(239, 68, 68, 0.2)'
-          }} />
-          {connected ? 'Connected' : 'Disconnected'}
-        </div>
-      </div>
-
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <div style={{ flex: 1, padding: '16px', overflowY: 'auto', backgroundColor: '#f0f2f5' }}>
           {activeTopics.length === 0 ? (
@@ -168,60 +136,94 @@ export function WsPanel({ configured, onResult }: WsPanelProps) {
           )}
         </div>
 
-        <div style={{ width: '280px', borderLeft: '1px solid #eee', padding: '16px', overflowY: 'auto' }}>
-          <h3 style={{ marginTop: 0, color: '#666', fontSize: '14px', marginBottom: '12px' }}>Add Topic</h3>
-          <input
-            type="text"
-            placeholder="Filter topics..."
-            value={topicFilter}
-            onChange={(e) => setTopicFilter(e.target.value)}
-            style={{ width: '100%', padding: '6px 8px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '4px' }}
-          />
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            {TOPICS.filter(t => t.name.toLowerCase().includes(topicFilter.toLowerCase())).map(item => (
-              <li key={item.name} style={{ marginBottom: '8px' }}>
-                <button
-                  onClick={() => addTopic(item.name)}
-                  disabled={activeTopics.includes(item.name) || !connected}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: (activeTopics.includes(item.name) || !connected) ? 'not-allowed' : 'pointer',
-                    color: (activeTopics.includes(item.name) || !connected) ? '#bbb' : '#333',
-                    textAlign: 'left',
-                    fontFamily: 'monospace',
-                    fontSize: '13px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '4px',
-                    width: '100%',
-                    borderRadius: '4px'
-                  }}
-                  onMouseOver={(e) => {
-                    if (!activeTopics.includes(item.name) && connected) e.currentTarget.style.backgroundColor = '#f0f0f0';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }}
-                >
-                  {item.color && (
-                    <span style={{
-                      width: '10px',
-                      height: '10px',
-                      backgroundColor: item.color,
-                      display: 'inline-block',
-                      marginRight: '6px',
-                      borderRadius: item.name.includes('horizontal_laser_2d') ? '50%' : '2px'
-                    }}></span>
-                  )}
-                  {!item.color && <span style={{ marginRight: '4px' }}>+</span>}
-                  {item.name}
-                </button>
-              </li>
-            ))}
-          </ul>
+        <div className="card" style={{ width: '280px', marginLeft: '10px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', minHeight: '24px' }}>
+            <h3 className="card-title" style={{ margin: 0, border: 'none', padding: 0 }}>WebSocket</h3>
+          </div>
+
+          <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '16px', paddingBottom: '16px', borderBottom: '1px solid var(--border)' }} >
+            <button
+              className={`btn ${shouldConnect ? 'btn-danger' : 'btn-primary'}`}
+              onClick={() => setShouldConnect(!shouldConnect)}
+              disabled={!configured}
+              style={{ padding: '0.5rem 1.5rem', fontWeight: 600 }}
+            >
+              {shouldConnect ? 'Disconnect' : 'Connect'}
+            </button>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: connected ? '#166534' : '#991b1b',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+            }}>
+              <div style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: connected ? '#22c55e' : '#ef4444',
+                boxShadow: connected ? '0 0 0 2px rgba(34, 197, 94, 0.2)' : '0 0 0 2px rgba(239, 68, 68, 0.2)'
+              }} />
+              {connected ? 'Connected' : 'Disconnected'}
+            </div>
+          </div>
+
+          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+            <h3 style={{ marginTop: 0, color: '#666', fontSize: '14px', marginBottom: '12px' }}>Add Topic</h3>
+            <input
+              type="text"
+              placeholder="Filter topics..."
+              value={topicFilter}
+              onChange={(e) => setTopicFilter(e.target.value)}
+              style={{ width: '100%', padding: '6px 8px', marginBottom: '12px', border: '1px solid #ddd', borderRadius: '4px' }}
+            />
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {TOPICS.filter(t => t.name.toLowerCase().includes(topicFilter.toLowerCase())).map(item => (
+                <li key={item.name} style={{ marginBottom: '2px' }}>
+                  <button
+                    onClick={() => addTopic(item.name)}
+                    disabled={activeTopics.includes(item.name) || !connected}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: (activeTopics.includes(item.name) || !connected) ? 'not-allowed' : 'pointer',
+                      color: (activeTopics.includes(item.name) || !connected) ? '#bbb' : '#333',
+                      textAlign: 'left',
+                      fontFamily: 'monospace',
+                      fontSize: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '4px',
+                      width: '100%',
+                      borderRadius: '4px'
+                    }}
+                    onMouseOver={(e) => {
+                      if (!activeTopics.includes(item.name) && connected) e.currentTarget.style.backgroundColor = '#f0f0f0';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                  >
+                    {item.color && (
+                      <span style={{
+                        width: '10px',
+                        height: '10px',
+                        backgroundColor: item.color,
+                        display: 'inline-block',
+                        marginRight: '6px',
+                        borderRadius: item.name.includes('horizontal_laser_2d') ? '50%' : '2px'
+                      }}></span>
+                    )}
+                    {!item.color && <span style={{ marginRight: '4px' }}>+</span>}
+                    {item.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

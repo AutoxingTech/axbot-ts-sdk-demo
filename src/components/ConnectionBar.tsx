@@ -20,34 +20,34 @@ export function ConnectionBar({
     return (
         <div className="card">
             <h2 className="card-title">Connection Settings & Proxy</h2>
-            <div className="grid">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div className="control-group">
                     <label className="control-label">REST Base URL</label>
-                    <input 
-                        className="input" 
-                        value={connection.restBaseUrl} 
-                        onChange={e => onConnectionChange({ ...connection, restBaseUrl: e.target.value })} 
-                        placeholder="https://192.168.1.100" 
+                    <input
+                        className="input"
+                        value={connection.restBaseUrl}
+                        onChange={e => onConnectionChange({ ...connection, restBaseUrl: e.target.value })}
+                        placeholder="https://192.168.1.100"
                     />
                 </div>
                 <div className="control-group">
                     <label className="control-label">WebSocket URL</label>
-                    <input 
-                        className="input" 
-                        value={connection.wsUrl} 
-                        onChange={e => onConnectionChange({ ...connection, wsUrl: e.target.value })} 
-                        placeholder="Optional. Defaults to ws(s)://host/ws/v2/topics" 
+                    <input
+                        className="input"
+                        value={connection.wsUrl}
+                        onChange={e => onConnectionChange({ ...connection, wsUrl: e.target.value })}
+                        placeholder="Optional. Defaults to ws(s)://host/ws/v2/topics"
                     />
                 </div>
             </div>
 
             <div className="control-group mt-4">
                 <label className="control-label">Cookie / Token</label>
-                <textarea 
-                    className="input" 
-                    rows={3} 
-                    value={connection.cookie} 
-                    onChange={e => onConnectionChange({ ...connection, cookie: e.target.value })} 
+                <textarea
+                    className="input"
+                    rows={3}
+                    value={connection.cookie}
+                    onChange={e => onConnectionChange({ ...connection, cookie: e.target.value })}
                     style={{ resize: 'vertical' }}
                     placeholder="Paste the full Cookie header value here..."
                 />
@@ -58,7 +58,7 @@ export function ConnectionBar({
                     <button className="btn btn-primary" disabled={loading} onClick={() => void onApply()}>
                         {loading ? 'Applying...' : 'Apply Connection'}
                     </button>
-                    
+
                     <span className={`status-badge ${configured ? 'status-connected' : 'status-disconnected'}`}>
                         {configured ? 'Proxy ready' : 'Not configured'}
                     </span>

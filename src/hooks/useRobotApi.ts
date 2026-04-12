@@ -64,12 +64,14 @@ export function useRobotApi() {
 
   const [apiLoadingLabel, setApiLoadingLabel] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [lastApiCall, setLastApiCall] = useState<{ method: string, url: string, payload?: any, status?: number } | null>(null);
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(connection));
   }, [connection]);
 
   const initSdk = useCallback(() => {
+    console.log('[useRobotApi] initSdk called');
     robotApi.init({
       getApiBase: () => '/robot-api',
       notification: {
@@ -77,6 +79,10 @@ export function useRobotApi() {
           console.log('[SDK Notification]', notification);
         },
       },
+      onApiCalled: (info) => {
+        console.log('[useRobotApi] onApiCalled triggered', info);
+        setLastApiCall(info);
+      }
     });
   }, []);
 
@@ -150,6 +156,7 @@ export function useRobotApi() {
       connectionError,
       apiLoadingLabel,
       apiError,
+      lastApiCall,
       applyConnectionConfig,
       execute,
     }),
@@ -161,6 +168,7 @@ export function useRobotApi() {
       connectionError,
       apiLoadingLabel,
       apiError,
+      lastApiCall,
       applyConnectionConfig,
       execute,
     ],

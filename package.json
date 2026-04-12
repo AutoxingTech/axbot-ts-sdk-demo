@@ -5,7 +5,7 @@
     "packageManager": "pnpm@10.33.0",
     "type": "module",
     "scripts": {
-        "dev": "vite",
+        "dev": "rm -rf node_modules/.vite && vite --force",
         "build": "tsc -b && vite build",
         "preview": "vite preview"
     },
